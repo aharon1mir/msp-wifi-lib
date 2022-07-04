@@ -44,6 +44,7 @@
 #define MAX_SOCK 0xff
 #define SPI_START_CMD_DELAY 12
 #define DELAY_SUB 3
+#define TIMEOUT_CHAR 1000
 
 /*
  * define wifi 
@@ -255,12 +256,45 @@ void waitForSlaveReady();
 void delay(unsigned int);
 
 void sendCmd(uint8_t, uint8_t);
-void sendParam(uint16_t, uint16_t);
-void sendParamW(uint16_t);
+void sendParam_W(uint16_t, uint8_t);
+void sendParamW(uint16_t)
 void sendParamC(uint8_t);
 void sendBuffer(uint8_t*, uint16_t, uint8_t);
 uint16_t readParamW(uint16_t*);
 uint8_t readParamC(uint8_t*);
+int waitSpiChar(unsigned char);
+
+/*
+ * define some macros
+ */
+#define WAIT_START_CMD(x) waitSpiChar(START_CMD)
+
+#define IF_CHECK_START_CMD(x)                      \
+    if (!WAIT_START_CMD(_data))                 \
+    {                                           \
+        return 0;                               \
+    }else                                       \
+
+#define CHECK_DATA(check, x)                   \
+        if (!readAndCheckChar(check, &x))   \
+        {                                               \
+            return 0;                                   \
+        }else                                           \
+
+#define WAIT_FOR_SLAVE_SELECT()	 \
+	waitForSlaveReady(); \
+	spiSlaveSelect();
+
+#define NO_LAST_PARAM   0
+#define LAST_PARAM 1
 
 
+
+
+int waitResponseCmd(uint8_t, uint8_t, uint8_t*, uint8_t*);
+int readAndCheckChar(char, char*);
+int waitResponseDataW(uint8_t, uint8_t*, uint16_t*);
+int waitResponseDataC(uint8_t, uint8_t*, uint8_t*);
+int waitResponseParams(uint8_t, uint8_t, tParam*);
+int waitResponse(uint8_t, uint8_t*, uint8_t**, uint8_t);
 #endif
